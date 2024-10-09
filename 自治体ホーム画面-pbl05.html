@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>自治体ホーム画面</title>
+    <style>
+        body {
+            background-color: #90AFC5;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            flex-direction: column;
+        }
+        .top-right {
+            position: absolute;
+            top: 10px;
+            right: 5px;
+        }
+        .top-left {
+            position: absolute;
+            top: 10px;
+            left: 5px;
+        }
+        .inquiry-button {
+            display: flex;
+            background-color: #f0f0f0;
+            color: #000;
+            border: 1px solid #000;
+            padding: 15px 40px;
+            text-decoration: none;
+            border-radius: 10px;
+            font-size: 1.5em;
+            font-weight: bold;
+            flex-direction: column;
+            margin: 10px 0;
+            width: 80%;
+            max-width: 300px;
+            justify-content: center;
+            align-items: center;
+        }
+        .inquiry-button:hover {
+            background-color: #dddddd;
+        }
+        .logout-button {
+            position: absolute;
+            width: 120px;
+            left: 10px;
+            top: 10px;
+            background-color: #f0f0f0;
+            color: #000;
+            border: 1px solid #000;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 7px;
+            font-size: 1.2em;
+            font-weight: bold;
+            text-align: center;
+        }
+        .logout-button:hover {
+            background-color: #dddddd;
+        }
+        .container {
+            text-align: center;
+            width: 100%;
+            max-width: 600px;
+        }
+        .title {
+            font-size: 2.5em;
+            font-weight: 900;
+            margin-bottom: 20px;
+            color: black;
+        }
+        @media (min-width: 600px) {
+            .title {
+                font-size: 3em;
+            }
+            .inquiry-button {
+                font-size: 1.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="自治体ログイン画面.html" class="logout-button top-left">ログアウト</a>
+    <div class="container">
+        <div class="title">YHS<br>避難補助アプリ</div>
+        <p><a href="パスワード変更.html" class="inquiry-button">パスワード変更</a></p>
+        <p><a href="避難先の新規登録う.html" class="inquiry-button">避難先の新規登録</a></p>
+        <p><a href="避難先の情報編集１.html" class="inquiry-button">避難先の情報編集</a></p>
+        <p><a href="問い合わせ一覧.html" class="inquiry-button">問い合わせ一覧</a></p>
+    </div>
+</body>
+</html>

@@ -1,0 +1,93 @@
+
+ChatGPT
+Mapboxのルート検索を使用するには、MapboxのAPIを使用してルート検索を実行する方法があります。以下は、MapboxのDirections APIを使用してルート検索を行う基本的な手順です。
+
+Mapboxアカウントの作成: Mapboxのウェブサイトでアカウントを作成し、アクセストークンを取得します。アクセストークンは、APIリクエストを行う際に認証に使用されます。
+
+Directions APIの利用: MapboxのDirections APIを使用してルート検索を行います。このAPIを使用すると、出発地点と目的地点の座標を指定し、ルート情報を取得することができます。
+
+地図上にルートを表示: 取得したルート情報を地図上に表示します。これには、Mapboxの地図ライブラリを使用して、ルートをポリラインとして描画するなどの方法があります。
+
+以下は、JavaScriptを使用してMapboxのDirections APIを呼び出してルート検索を行う例です。
+
+html
+コードをコピーする
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mapbox Directions API Example</title>
+  <script src="https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.js"></script>
+  <link href="https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.css" rel="stylesheet">
+  <style>
+    #map {
+      width: 100%;
+      height: 600px;
+    }
+  </style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<script>
+  mapboxgl.accessToken = 'YOUR_MAPBOX_ACCESS_TOKEN';
+
+  var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/streets-v11',
+    center: [-77.034, 38.907],
+    zoom: 11
+  });
+
+  // ルート検索を実行する関数
+  function getRoute(start, end) {
+    var url = 'https://api.mapbox.com/directions/v5/mapbox/driving/' + start.lng + ',' + start.lat + ';' + end.lng + ',' + end.lat + '?steps=true&geometries=geojson&access_token=' + mapboxgl.accessToken;
+
+    fetch(url)
+      .then(response => response.json())
+      .then(data => {
+        var route = data.routes[0];
+        var routeGeometry = route.geometry.coordinates;
+
+        map.addLayer({
+          'id': 'route',
+          'type': 'line',
+          'source': {
+            'type': 'geojson',
+            'data': {
+              'type': 'Feature',
+              'properties': {},
+              'geometry': {
+                'type': 'LineString',
+                'coordinates': routeGeometry
+              }
+            }
+          },
+          'layout': {
+            'line-join': 'round',
+            'line-cap': 'round'
+          },
+          'paint': {
+            'line-color': '#3887be',
+            'line-width': 8,
+            'line-opacity': 0.75
+          }
+        });
+      })
+      .catch(err => console.error('Error:', err));
+  }
+
+  // 出発地点と目的地点の座標
+  var start = { lat: 38.9133, lng: -77.0394 };
+  var end = { lat: 38.8977, lng: -77.0365 };
+
+  // ルート検索を実行
+  getRoute(start, end);
+
+</script>
+
+</body>
+</html>
+この例では、MapboxのJavaScriptライブラリを使用して地図を初期化し、Directions APIを呼び出してルート検索を行い、取得したルート情報を地図上に表示しています。アクセストークンを適切なものに置き換えてください。

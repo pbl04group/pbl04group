@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>現在地から目的地までのナビゲーション</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        body { margin: 0; padding: 0; }
+        #map { height: 100vh; }
+        #controls {
+            position: absolute;
+            bottom: 10%;
+            width: 100%;
+            display: flex;
+            justify-content: space-between; /* Ensure space between elements */
+            z-index: 1000;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        #destinationList, #syudanList {
+            flex: 1;
+            margin: 0 10px;
+        }
+        #destinationSelect, #syudanSelect {
+            width: 100%; /* Full width within their containers */
+            height: 35px;
+            font-size: 16px;
+        }
+        #routeInstructions {
+            position: absolute;
+            bottom: 15%;
+            left: 5%;
+            z-index: 1000;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            max-height: 30vh;
+            overflow-y: auto;
+        }
+        .active-button {
+            background-color: rgb(96, 96, 255);
+            color: white;
+        }
+        .back-button1 {
+            position: absolute;
+            top: 30px;
+            right: 25px;
+            z-index: 1000;
+            bottom: 91%;
+            width: 25%;
+            border: 1px solid #000;
+            border-radius: 7px;
+            font-size: 1em;
+            font-weight: bold;
+            text-decoration: none;
+        }
+        .back-button1:hover{
+            background-color: #dddddd;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <div id="controls">
+        <div id="destinationList">
+            <select id="destinationSelect">
+                <option value="reset" id="resetButton">目的地を選択</option>
+            </select>
+        </div>
+        <div id="syudanList">
+            <select id="syudanSelect">
+                <option value="">移動手段を選択</option>
+                <option value="car">車</option>
+                <option value="walk">徒歩</option>
+                <option value="none">案内非表示</option>
+
+            </select>
+        </div>
+    </div>
+    <div id="routeInstructions">
+        <!-- Instructions here -->
+    </div>
+    <div id="back-button">
+        <button onclick="window.location.href='ホ.html'" class="back-button1">戻る</button>
+    </div>
+
+    <div id="button-container" style="position: absolute; top: 30px; left: 55px; z-index: 1000;">
+        <button onclick="toggleHazard()">洪水</button>
+    </div>
+    <div id="button-container2" style="position: absolute; top: 60px; left: 55px; z-index: 1000;">
+        <button onclick="toggleHazard2()">津波</button>
+    </div>
+    <div id="button-container3" style="position: absolute; top: 30px; left: 105px; z-index: 1000;">
+        <button onclick="toggleHazard3()">土石流</button>
+    </div>
+    <div id="button-container4"  style="position: absolute; top: 60px; left: 105px; z-index: 1000;">
+        <button onclick="toggleTraffic()">交通情報</button>
+    </div>
+    
+    <div id="currentPosition"></div>
+    <div id="routeInstructions"></div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        const accessToken = 'pk.eyJ1IjoiaXMyM3lvc2giLCJhIjoiY2x4ZTQ4c2h4MGRqejJqc2o1dnMxdDR2byJ9.wYZG2bIs6aFyCzWjo_BMFA';
+
+        var map = L.map('map').setView([38.255440, 140.339600], 9);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        var hazardLayer = L.tileLayer('https://disaportaldata.gsi.go.jp/raster/01_flood_l2_shinsuishin_pref_data/06/{z}/{x}/{y}.png', {
+            attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors',
+            pane: 'hazardPane'
+        });
+
+        var hazardLayer2 = L.tileLayer('https://disaportaldata.gsi.go.jp/raster/04_tsunami_newlegend_pref_data/06/{z}/{x}/{y}.png', {
+            attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors',
+            pane: 'hazardPane'
+        });
+
+        var hazardLayer3 = L.tileLayer('https://disaportaldata.gsi.go.jp/raster/05_dosekiryukeikaikuiki_data/06/{z}/{x}/{y}.png', {
+            attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors',
+            pane: 'hazardPane'
+        });
+
+        map.createPane('hazardPane');
+        map.getPane('hazardPane').style.zIndex = 650;
+
+        function toggleHazard() {
+            const hazardButton = document.querySelector('button[onclick="toggleHazard()"]');
+            if (map.hasLayer(hazardLayer)) {
+                map.removeLayer(hazardLayer);
+                hazardButton.classList.remove('active-button');
+            } else {
+                hazardLayer.addTo(map);
+                hazardButton.classList.add('active-button');
+            }
+        }
+
+        function toggleHazard2() {
+            const hazardButton2 = document.querySelector('button[onclick="toggleHazard2()"]');
+            if (map.hasLayer(hazardLayer2)) {
+                map.removeLayer(hazardLayer2);
+                hazardButton2.classList.remove('active-button');
+            } else {
+                hazardLayer2.addTo(map);
+                hazardButton2.classList.add('active-button');
+            }
+        }
+
+        function toggleHazard3() {
+            const hazardButton3 = document.querySelector('button[onclick="toggleHazard3()"]');
+            if (map.hasLayer(hazardLayer3)) {
+                map.removeLayer(hazardLayer3);
+                hazardButton3.classList.remove('active-button');
+            } else {
+                hazardLayer3.addTo(map);
+                hazardButton3.classList.add('active-button');
+            }
+        }
+
+        let routeInstructionsVisible = true;
+
+        function toggleRouteInstructions() {
+            const routeInstructionsDiv = document.getElementById('routeInstructions');
+            if (routeInstructionsVisible) {
+                routeInstructionsDiv.style.display = 'none';
+                routeInstructionsVisible = false;
+            } else {
+                routeInstructionsDiv.style.display = 'block';
+                routeInstructionsVisible = true;
+            }
+        }
+
+        const blueIcon = L.icon({
+            iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
+        });
+
+        const grayIcon = L.icon({
+            iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-grey.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
+        });
+
+        const redIcon = L.icon({
+            iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
+        });
+
+        let startMarker = null;
+        let endMarker = null;
+        let routeLine = null;
+
+        const destinations = [
+            { name: 'a', coords: [38.255440, 140.339600] },
+            { name: 'b', coords: [38.241186, 140.3663854] },
+            { name: 'c', coords: [38.278, 140.3473] },
+            { name: 'd', coords: [38.307, 140.3323] },
+            { name: 'げんき', coords: [38.233758400975695, 140.26635361053647]}
+        ];
+
+        navigator.geolocation.getCurrentPosition(position => {
+            const start = [position.coords.latitude, position.coords.longitude];
+            map.setView(start, 15);
+
+            startMarker = L.marker(start, { icon: blueIcon }).addTo(map);
+            startMarker.bindPopup(`<b>現在地:</b>`).openPopup();
+
+            destinations.forEach(destination => {
+                const directionsRequest = `https://api.mapbox.com/directions/v5/mapbox/driving/${start[1]},${start[0]};${destination.coords[1]},${destination.coords[0]}?geometries=geojson&access_token=${accessToken}`;
+
+                fetch(directionsRequest)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.routes && data.routes.length > 0) {
+                            const duration = data.routes[0].duration / 60; // 分単位で取得する
+                            const distance = data.routes[0].distance / 1000;
+
+                            const option = document.createElement('option');
+                            option.value = destination.name;
+                            option.textContent = `${destination.name} (${formatTime(duration)}, ${distance.toFixed(1)} km)`;
+                            document.getElementById('destinationSelect').appendChild(option);
+
+                            destination.distance = distance;
+                            destination.duration = duration;
+
+                            const endMarkerTemp = L.marker(destination.coords, { icon: grayIcon }).addTo(map);
+                            endMarkerTemp.bindPopup(`<b>目的地:</b><br>${destination.name}<br>所要時間: ${formatTime(duration)}<br>距離: ${distance.toFixed(1)} km`);
+                            destination.marker = endMarkerTemp;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('ルート取得中にエラーが発生しました:', error);
+                    });
+            });
+
+            document.getElementById('destinationSelect').onchange = (event) => {
+                if (event.target.value === 'reset') {
+                    resetDestination();
+                } else {
+                    const selectedDestination = destinations.find(destination => destination.name === event.target.value);
+                    if (selectedDestination) {
+                        setDestination(selectedDestination.coords, selectedDestination.name, event.target);
+                    }
+                }
+            };
+
+            function formatTime(minutes) {
+                if (minutes < 60) {
+                    return `${Math.round(minutes)} 分`;
+                } else {
+                    const hours = Math.floor(minutes / 60);
+                    const remainingMinutes = Math.round(minutes % 60);
+                    if (remainingMinutes === 0) {
+                        return `${hours} 時間`;
+                    } else {
+                        return `${hours} 時間 ${remainingMinutes} 分`;
+                    }
+                }
+            }
+
+            function setDestination(coords, name, listItem) {
+                const end = coords;
+
+                if (endMarker) {
+                    endMarker.setIcon(grayIcon);
+                }
+
+                endMarker = destinations.find(destination => destination.coords[0] === coords[0] && destination.coords[1] === coords[1]).marker;
+                endMarker.setIcon(redIcon);
+
+                if (routeLine) {
+                    map.removeLayer(routeLine);
+                }
+
+                const directionsRequest = `https://api.mapbox.com/directions/v5/mapbox/driving/${start[1]},${start[0]};${end[1]},${end[0]}?steps=true&geometries=geojson&access_token=${accessToken}`;
+
+                fetch(directionsRequest)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.routes && data.routes.length > 0) {
+                            const route = data.routes[0].geometry.coordinates.map(coord => [coord[1], coord[0]]);
+                            routeLine = L.polyline(route, {
+                                color: 'blue',
+                                weight: 5,
+                                opacity: 0.75
+                            }).addTo(map);
+
+                            const bounds = L.latLngBounds([start, end]);
+                            map.fitBounds(bounds.pad(0.2));
+
+                            const duration = data.routes[0].duration / 60; // 分単位で取得する
+                            const distance = data.routes[0].distance / 1000;
+                            endMarker.bindPopup(`<b>目的地:</b><br>${name}<br>所要時間: ${formatTime(duration)}<br>距離: ${distance.toFixed(1)} km`).openPopup();
+
+                            const steps = data.routes[0].legs[0].steps;
+                            let instructions = '<b>ルート案内:</b><br>';
+                            steps.forEach((step, index) => {
+                                instructions += `${index + 1}. ${step.maneuver.instruction}<br>`;
+                            });
+
+                            document.getElementById('routeInstructions').innerHTML = instructions;
+
+                            const endPoint = `${end[1]},${end[0]}`;
+                            const geocodeRequest = `https://api.mapbox.com/geocoding/v5/mapbox.places/${endPoint}.json?access_token=${accessToken}`;
+
+                            fetch(geocodeRequest)
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.features && data.features.length > 0) {
+                                        const address = data.features[0].place_name;
+                                        endMarker.bindPopup(`<b>目的地:</b><br>${address}<br><b>所要時間:</b> ${formatTime(duration)}<br><b>距離:</b> ${distance.toFixed(1)} km`).openPopup();
+                                        listItem.options[listItem.selectedIndex].textContent = `${name} (${formatTime(duration)}, ${distance.toFixed(1)} km)`;
+                                    } else {
+                                        endMarker.bindPopup(`<b>目的地:</b><br>住所が見つかりませんでした。<br><b>所要時間:</b> ${formatTime(duration)}<br><b>距離:</b> ${distance.toFixed(1)} km`).openPopup();
+                                        listItem.options[listItem.selectedIndex].textContent = `${name} (${formatTime(duration)}, ${distance.toFixed(1)} km)`;
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error('住所取得中にエラーが発生しました:', error);
+                                    endMarker.bindPopup(`<b>目的地:</b><br>住所を取得できませんでした。<br><b>所要時間:</b> ${formatTime(duration)}<br><b>距離:</b> ${distance.toFixed(1)} km`).openPopup();
+                                    listItem.options[listItem.selectedIndex].textContent = `${name} (${formatTime(duration)}, ${distance.toFixed(1)} km)`;
+                                });
+                        } else {
+                            alert('ルートが見つかりませんでした。');
+                            endMarker.bindPopup('<b>目的地:</b><br>ルートが見つかりませんでした。').openPopup();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('ルート取得中にエラーが発生しました:', error);
+                        alert('ルート取得中にエラーが発生しました。');
+                        endMarker.bindPopup('<b>目的地:</b><br>ルート取得中にエラーが発生しました。').openPopup();
+                    });
+            }
+
+            function resetDestination() {
+                if (endMarker) {
+                    endMarker.setIcon(grayIcon);
+                    endMarker.closePopup(); // 目的地のポップアップを非表示にする
+                    endMarker = null;
+                }
+                if (routeLine) {
+                    map.removeLayer(routeLine);
+                    routeLine = null;
+                }
+                document.getElementById('routeInstructions').innerHTML = '';
+            }
+
+        }, error => {
+            console.error('Geolocation error:', error);
+            alert('現在地を取得できませんでした。');
+        });
+
+        // syudanSelectの変更イベントを設定
+        document.getElementById('syudanSelect').onchange = (event) => {
+            const selectedSyudan = event.target.value;
+            switch (selectedSyudan) {
+                case 'car':
+                    // 車でのルートを表示
+                    break;
+                case 'walk':
+                    // 徒歩でのルートを表示
+                    break;
+                case 'none':
+                    // ルート案内を非表示
+                    document.getElementById('routeInstructions').style.display = 'none';
+                    break;
+                default:
+                    break;
+            }
+        };
+
+         // Traffic layer toggle
+         var trafficLayer = L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/traffic-night-v2/tiles/256/{z}/{x}/{y}@2x?access_token=' + accessToken, {
+            attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
+        });
+
+        function toggleTraffic() {
+            if (map.hasLayer(trafficLayer)) {
+                map.removeLayer(trafficLayer);
+            } else {
+                trafficLayer.addTo(map);
+            }
+        }
+
+        // Traffic button
+        var trafficButton = document.createElement('button');
+        trafficButton.innerHTML = '交通情報';
+        trafficButton.style.position = 'absolute';
+        trafficButton.addEventListener('click', toggleTraffic);
+        document.body.appendChild(trafficButton);
+
+        // 封鎖された道路を赤色のアイコンで表示する例
+        const closedRoadIcon = L.icon({
+            iconUrl: 'https://example.com/closed-road-icon.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
+        });
+
+        // 封鎖された道路のマーカーを地図に追加する例
+        const closedRoadMarker = L.marker([lat, lng], { icon: closedRoadIcon }).addTo(map);
+        closedRoadMarker.bindPopup('この道路は現在封鎖されています。');
+
+        // または、地図のスタイルを変更して封鎖された道路を強調表示する例
+        const customStyle = {
+            "color": "#ff0000",  // 封鎖された道路の線の色
+            "weight": 5  // 線の太さ
+        };
+
+        // GeoJSON レイヤーを使って封鎖された道路を表示する例
+        const closedRoadGeoJSON = L.geoJSON(closedRoadGeometry, {
+            style: customStyle
+        }).addTo(map);
+
+    // 自動更新用の関数
+    function updateMap() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(position => {
+                    const newCenter = [position.coords.latitude, position.coords.longitude];
+                    const newZoom = map.getZoom();
+
+                    map.setView(newCenter, newZoom); // 地図の中心とズームを設定
+
+                    lastCenter = newCenter; // 現在の中心座標を更新
+                    lastZoom = newZoom; // 現在のズームレベルを更新
+                }, error => {
+                    console.error('Geolocation error:', error);
+                });
+            }
+        }
+
+        // 定期的に地図を更新（例: 60秒ごとに更新）
+        setInterval(updateMap, 600);
+
+    </script>
+</body>
+</html>

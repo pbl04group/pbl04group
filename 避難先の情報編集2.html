@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>避難先の情報編集画面２</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        body {
+            background-color: #90AFC5;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding-top: 80px; /* ヘッダーの高さ分だけ余白を追加 */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            height: 100vh;
+            box-sizing: border-box;
+        }
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #73a0c0;
+            height: 60px; /* ヘッダーの高さを統一 */
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .header .back-button {
+            background-color: #f0f0f0;
+            color: #000;
+            border: 1px solid #000;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 7px;
+            font-size: 1.2em; /* 統一 */
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .header .back-button:hover {
+            background-color: #dddddd;
+        }
+        .header h1 {
+            font-size: 2em;
+            font-weight: 900;
+            margin: 0;
+            color: black;
+            text-align: center;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .header .delete-button {
+            background-color: #fd6f6f;
+            color: #000;
+            border: 1px solid #000;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 7px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.0em;
+            margin-right: 40px;
+        }
+        .header .delete-button:hover {
+            background-color: #fc4747;
+        }
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            display: grid;
+            grid-template-areas:
+                "map"
+                "form"
+                "button";
+            grid-gap: 20px;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .map {
+            grid-area: map;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .map label {
+            display: block;
+            margin: 30px 0 5px;
+            font-size: 1.2em;
+            font-weight: bold;
+            text-align: left;
+        }
+        .map input[type="text"],
+        .map textarea {
+            font-size: 1em;
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 7px;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+        }
+        #map {
+            width: 100%;
+            height: 500px;
+            border-radius: 10px;
+            position: relative;
+            z-index: 1; /* マップのz-indexを低くする */
+        }
+        .leaflet-control {
+            z-index: 500; /* 拡大縮小ボタンなどのコントロールのz-indexをheaderよりも低く */
+        }
+        #coordinates {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 10px;
+            font-size: 1em;
+            gap: 20px; /* 緯度入力欄と経度入力欄の間にスペースを追加 */
+        }
+        .form {
+            grid-area: form;
+            text-align: left;
+            max-width: 454px;
+            margin: 0 auto;
+        }
+        .form label {
+            display: block;
+            margin: 10px 0 5px;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        .form input[type="text"],
+        .form textarea {
+            font-size: 1em;
+            width: 454px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 7px;
+            margin-bottom: 40px;
+            box-sizing: border-box;
+        }
+        .form textarea {
+            height: 150px;
+        }
+        .submit {
+            grid-area: button;
+            display: flex;
+            justify-content: center;
+        }
+        .submit button {
+            width: 100%;
+            max-width: 300px;
+            padding: 15px;
+            border: none;
+            background-color: #000;
+            color: #fff;
+            font-size: 1.2em;
+            border-radius: 7px;
+            cursor: pointer;
+            text-align: center;
+        }
+        .submit button:hover {
+            background-color: #444;
+        }
+        .required-text {
+            font-size: 0.9em;
+            color: red;
+            margin-left: 5px;
+            padding: 3px;
+            border: 2px solid red;
+            border-radius: 50%;
+        }
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.5em;
+            }
+            .form label {
+                font-size: 1em;
+            }
+            .form input[type="text"],
+            .form textarea {
+                font-size: 0.9em;
+            }
+            .submit button {
+                font-size: 1em;
+            }
+            #map {
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="/information-change_1" class="back-button top-left">戻る</a>
+        <h1>YHS<br>避難先の情報編集</h1>
+        <form action="/delete" method="POST" onsubmit="return deleteaction()">
+            <input type="hidden" id="shelter_delete" name="shelter_delete">
+            <button type="submit" class="delete-button">この避難先を削除する</button>
+        </form>
+    </div>
+    <div class="container">
+        <form action="/change-shelter-database" method="POST">
+            <input type="hidden" id="shelter-id" name="id" value="">
+            <div class="map">
+                <label for="address">避難先の場所<span class="required-text">必須</span></label>
+                <div id="map"></div>
+                <div id="coordinates">
+                    <div class="input-group">
+                        <label for="lat">緯度:</label>
+                        <input type="text" id="lat" name="lat" placeholder="緯度" readonly />
+                    </div>
+                    <div class="input-group">
+                        <label for="lng">経度:</label>
+                        <input type="text" id="lng" name="lng" placeholder="経度" readonly />
+                    </div>
+                </div>
+            </div>
+            <div class="form">
+                <label for="address">避難先の住所<span class="required-text">必須</span></label>
+                <input type="text" id="address" name="address" placeholder="避難先の住所">
+                <label for="shelter-name">避難先の名称<span class="required-text">必須</span></label>
+                <input type="text" id="shelter-name" name="name" placeholder="避難先の名称">
+                <label for="details">避難先の詳細情報<span class="required-text">必須</span></label>
+                <textarea id="details" name="details" placeholder="避難可能な人数、トイレの有無など"></textarea>
+            </div>
+            <div class="submit">
+                <button type="submit" onclick="save(event)">保存</button>
+            </div>
+        </form>
+    </div>
+    
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        var map = L.map('map').setView([38.4874, 140.1952], 8);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        var marker;
+        var latInput = document.getElementById('lat'); // 緯度入力用のinput
+        var lngInput = document.getElementById('lng'); // 経度入力用のinput
+
+        function onMapClick(e) {
+            if (marker) {
+                map.removeLayer(marker);
+            }
+            marker = L.marker(e.latlng).addTo(map);
+
+            // 緯度経度を入力欄に自動的に挿入
+            latInput.value = e.latlng.lat.toFixed(6);
+            lngInput.value = e.latlng.lng.toFixed(6);
+        }
+
+        map.on('click', onMapClick);
+
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const shelterId = urlParams.get('shelter');
+            if (shelterId) {
+                document.getElementById('shelter_delete').value = shelterId;
+                document.getElementById('shelter-id').value = shelterId;
+
+                fetch(`/get-shelter-details?shelter=${shelterId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('取得した避難先:', data); // デバッグ情報
+                        document.getElementById('lat').value = data.hinansakiido;
+                        document.getElementById('lng').value = data.hinansakikeido;
+                        document.getElementById('address').value = data.zyuusyo;
+                        document.getElementById('shelter-name').value = data.hinansakimei;
+                        document.getElementById('details').value = data.syousai;
+                    })
+                    .catch(error => {
+                        console.error('Error fetching shelter details:', error);
+                    });
+            } else {
+                console.error('避難先IDがURLパラメータに含まれていません');
+            }
+        });
+
+        function save(event) {
+            const map = document.getElementById('map');
+            const address = document.getElementById('address');
+            const shelterName = document.getElementById('shelter-name');
+            const details = document.getElementById('details');
+            if (map.value === "" || address.value === "" || shelterName.value === "" || details.value === "") {
+                event.preventDefault();
+                alert('不備があります。');
+            } else {
+                alert('保存しました。');
+                location.href = "./home";
+            }
+        }
+
+        function deleteaction() {
+            var result = window.confirm("本当にこの避難先を削除しますか。");
+            if (result) {
+                alert("避難先を削除しました。");
+                return true; // フォームを送信
+            } else {
+                return false; // フォームを送信しない
+            }
+        }
+    </script>
+</body>
+
+
+
+</html>

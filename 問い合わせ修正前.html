@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>問い合わせ</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #90AFC5;
+            position: relative;
+        }
+        #container {
+            text-align: center;
+            width: 80%;
+            max-width: 600px;
+        }
+        h1 {
+            font-size: 1em;
+        }
+        h2{
+            font-size: 1em;
+            text-align: left;
+        }
+        .button, .soushinbutton {
+            font-size: 18px;
+            padding: 10px 20px;
+            cursor: pointer;
+            border: none;
+            border-radius: 7px;
+            color: white;
+        }
+        .soushinbutton {
+            font-size: 20px;
+        }
+        .back-button {
+            position: absolute;
+            left: 10px;
+            top: 50px;
+            background-color: #f0f0f0;
+            color: #000;
+            border: 1px solid #000;
+            padding: 15px 40px;
+            text-decoration: none;
+            border-radius: 7px;
+            font-size: 1em;
+            font-weight: bold;
+        }
+        .back-button:hover {
+            background-color: #dddddd;
+        }
+        .submit-button {
+            background-color: #000000;
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            width: 150px;
+            transform: translateX(-50%);
+        }
+        .submit-button:hover {
+            background-color: #4e4e4e;
+        }
+        .text1 {
+            height: 48px;
+            font-size: 16px;
+            line-height: 1.5;
+            padding: 10px;
+            width: 100%;
+            max-width: 400px;
+            box-sizing: border-box;
+        }
+        .text2 {
+            height: 120px;
+            font-size: 16px;
+            line-height: 1.5;
+            padding: 10px;
+            width: 100%;
+            max-width: 400px;
+            box-sizing: border-box;
+        }
+        #syudanSelect {
+            font-size: 16px;
+            padding: 12px;
+            width: 100%;
+            max-width: 400px;
+            box-sizing: border-box;
+            cursor: pointer;;
+        }
+        .radio-container {
+            margin-top: 10px;
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+        }
+        .radio-label {
+            font-size: 15px;
+            display: block;
+            width: 50%;
+            margin-bottom: 5px;
+            padding: 10px;
+        }
+        .hidden {
+            visibility: hidden; /* 要素を非表示に */
+            position: absolute; /* レイアウトに影響を与えない */
+        }
+        .visible {
+            display: block;
+        }
+        .error {
+            border: 2px solid red;
+            border-radius: 5px;
+            padding: 8px;
+        }
+        .required-text {
+            font-size: 17px;
+            color: red;
+            margin-left: 5px;
+            padding: 3px;
+            border: 2px solid red;
+            border-radius: 30%;
+        }
+        .title {
+            font-size: 2em;
+            font-weight: 900;
+            margin-bottom: 30px;
+            color: black;
+        }
+    </style>
+    <script>
+        function toggleMunicipalitySelect() {
+            const municipalitySection = document.getElementById('municipalitySection');
+            const municipalityRadio = document.getElementById('municipalityRadio');
+            if (municipalityRadio.checked) {
+                municipalitySection.classList.remove('hidden');
+                municipalitySection.classList.add('visible');
+            } else {
+                municipalitySection.classList.remove('visible');
+                municipalitySection.classList.add('hidden');
+            }
+        }
+    
+        function validateForm(event) {
+            event.preventDefault();
+            let isValid = true;
+    
+            const emailInput = document.querySelector('.text1');
+            const municipalitySelect = document.getElementById('syudanSelect');
+            const contentInput = document.querySelector('.text2');
+            const municipalityRadio = document.getElementById('municipalityRadio');
+    
+            // Reset previous error styles
+            emailInput.classList.remove('error');
+            municipalitySelect.classList.remove('error');
+            contentInput.classList.remove('error');
+            document.querySelectorAll('.radio-label').forEach(label => {
+                label.classList.remove('error');
+            });
+
+            // Email validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (emailInput.value.trim() === '') {
+                emailInput.classList.add('error');
+                isValid = false;
+            } else if (!emailRegex.test(emailInput.value.trim())) {
+                alert('メールアドレスの形式で入力してください');
+                emailInput.classList.add('error');
+                isValid = false;
+            }
+    
+            // Check municipality radio
+            if (!document.querySelector('input[name="role"]:checked')) {
+                document.querySelectorAll('.radio-label').forEach(label => {
+                    label.classList.add('error');
+                });
+                isValid = false;
+            } else {
+                document.querySelectorAll('.radio-label').forEach(label => {
+                    label.classList.remove('error');
+                });
+            }
+    
+            // Check municipality select if municipality is selected
+            if (municipalityRadio.checked && municipalitySelect.value === '') {
+                municipalitySelect.classList.add('error');
+                isValid = false;
+            }
+    
+            // Check content input
+            if (contentInput.value.trim() === '') {
+                contentInput.classList.add('error');
+                isValid = false;
+            }
+    
+            if (isValid) {
+                alert('送信が完了しました');
+                window.location.href = "ホ.html";
+            } else {
+                alert('不備があります');
+            }
+    
+            return isValid;
+        }
+    
+        document.addEventListener('DOMContentLoaded', function() {
+            const submitButton = document.querySelector('.soushinbutton');
+            submitButton.addEventListener('click', validateForm);
+        });
+    </script>
+</head>
+<body>
+    <div id="container">
+        <div class="title">YHS<br>問い合わせ</div>
+        <h2>メールアドレス<span class="required-text">必須</span></h2>
+        <input type="email" class="text1" placeholder="メールアドレス"></textarea>
+        <h2>問い合わせ先を選択<span class="required-text">必須</span></h2>
+        <div class="radio-container">
+            <label class="radio-label">
+                <input type="radio" name="role" value="admin" onclick="toggleMunicipalitySelect()"> システム管理者
+            </label>
+            <label class="radio-label">
+                <input type="radio" name="role" value="local" id="municipalityRadio" onclick="toggleMunicipalitySelect()"> 自治体
+            </label>
+        </div>
+        <div id="municipalitySection" class="hidden">
+            <h2>問い合わせする自治体を選択<span class="required-text">必須</span></h2>
+            <div id="syudanList">
+                <select id="syudanSelect">
+                    <option value="">自治体を選択</option>
+                    <option value="ya">山形市</option>
+                    <option value="sya">釈迦堂</option>
+                    <option value="tomi">富里市</option>
+                    <option value="sys">システム管理者</option>
+                </select>
+            </div>
+        </div>
+        <h2>お問い合わせ内容<span class="required-text">必須</span></h2>
+        <textarea class="text2" placeholder="お問い合わせ内容"></textarea>
+    </div>
+    <a class="button back-button" href='ホ.html'>戻る</a>
+    <button class="soushinbutton submit-button">送信</button>
+</body>
+</html>
+<!-- 
+replitはデータベースの中身ごとwebアプリケーションとして公開できますか
+ChatGPT:
+ChatGPT
+Replit（旧Repl.it）でデータベースの中身を含めて、Webアプリケーションとして公開することは可能です。ただし、Replitを使用する際にはいくつかのポイントに注意が必要です。
+
+1. Replitでのデータベースの取り扱い
+Replitは、仮想環境上で動作するオンラインIDEで、いくつかのデータベース（SQLite、PostgreSQL、MongoDBなど）をサポートしています。以下の2つのアプローチでデータベースを使用できます。
+
+SQLite（軽量なファイルベースのデータベース）
+PostgreSQL（Replitの外部サービスとして接続）
+SQLiteを使う場合、データベースファイルは通常プロジェクト内に配置され、サーバーが実行される度にアクセスされます。しかし、データベースがReplit環境内に保存されるため、セッションが終了するとデータが失われるという問題があります。
+
+2. Webアプリケーションの公開
+Replitでは、コードをホスティングするために、簡単にWebアプリケーションを公開できます。プロジェクトの設定で「Web」を選び、index.htmlやserver.jsなどを提供するだけでWebアプリとして公開できます。
+
+Webアプリケーションとして公開する手順（基本）:
+
+Replitでプロジェクト作成:
+
+Replitのダッシュボードで新しいプロジェクトを作成します。
+Node.js、Python、HTML/CSS、その他のスタックを選択します。
+サーバーコードの準備（例: Node.js）:
+
+例として、Node.jsを使ってサーバーを作成します。server.jsファイルにサーバーの設定を追加します。
+サーバーコードでexpressを使って、データベースとの連携（SQLiteやPostgreSQL）を設定します。
+データベースの設定（SQLiteなど）:
+
+SQLiteの場合、プロジェクト内にtest.dbのようなデータベースファイルを作成します。
+PostgreSQLを使う場合は、外部のデータベースサービス（例えば、HerokuやElephantSQL）を使って接続します。
+データベースの内容をWebアプリで利用:
+
+APIエンドポイント（GETやPOST）を使ってデータベースの内容を取得したり、保存したりできます。
+WebページからAPIを呼び出して、データベースから情報を表示することができます。
+公開:
+
+Replitの「Run」ボタンを押すと、指定したポート（通常は3000）でサーバーが立ち上がります。
+Replit上で公開されたURL（https://your-repl-name.repl.co）で、インターネット経由でアクセス可能になります。
+3. データベースをWebアプリケーションで公開する例:
+以下は、SQLiteデータベースの内容をNode.jsとExpressを使ってWebアプリケーションとして公開する基本的なコード例です。
+
+server.js（Node.js + Express + SQLiteの例）
+javascript
+コードをコピーする
+const express = require('express');
+const sqlite3 = require('sqlite3').verbose();
+const path = require('path');
+
+const app = express();
+const db = new sqlite3.Database('./test.db'); // データベースファイル
+
+// 静的ファイルを提供
+app.use(express.static(path.join(__dirname, 'public')));
+
+// データベースから情報を取得するAPIエンドポイント
+app.get('/shelters', (req, res) => {
+    db.all('SELECT * FROM shelters', (err, rows) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        res.json(rows); // データベースの内容をJSONとして返す
+    });
+});
+
+// サーバーを3000番ポートで起動
+app.listen(3000, () => {
+    console.log('サーバーが http://localhost:3000 で実行中');
+});
+データベースの初期化（SQLite）
+もしまだテーブルが作成されていない場合は、サーバーが起動する際にデータベースのテーブルを作成するコードを追加できます。
+
+javascript
+コードをコピーする
+db.serialize(() => {
+    db.run('CREATE TABLE IF NOT EXISTS shelters (id INTEGER PRIMARY KEY, name TEXT, latitude REAL, longitude REAL)');
+    db.run('INSERT INTO shelters (name, latitude, longitude) VALUES (?, ?, ?)', ['避難所A', 35.6895, 139.6917]);
+});
+public/index.html（データを表示するためのHTML）
+html
+コードをコピーする
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>避難所リスト</title>
+</head>
+<body>
+    <h1>避難所リスト</h1>
+    <ul id="shelters-list"></ul>
+
+    <script>
+        // データベースから取得した避難所情報を表示
+        fetch('/shelters')
+            .then(response => response.json())
+            .then(shelters => {
+                const listElement = document.getElementById('shelters-list');
+                shelters.forEach(shelter => {
+                    const li = document.createElement('li');
+                    li.textContent = `${shelter.name} - 緯度: ${shelter.latitude}, 経度: ${shelter.longitude}`;
+                    listElement.appendChild(li);
+                });
+            })
+            .catch(error => console.error('Error fetching shelters:', error));
+    </script>
+</body>
+</html>
+4. データベースを公開する注意点
+データの永続性:
+Replit上でデータベースがローカルに保存されている場合、セッションが切れたり、アプリが再起動されるたびにデータが消えてしまうことがあります。これを防ぐには、データベースファイルをGitHubリポジトリに保存するか、外部データベース（例えば、HerokuやElephantSQL）を使用するのが良いでしょう。
+
+セキュリティ:
+公開されたアプリケーションにアクセスできるのは誰でもできるため、データベースにアクセスする部分は適切なセキュリティ対策を施す必要があります。例えば、SQLインジェクション対策、APIの認証、HTTPSの利用などが挙げられます。
+
+パフォーマンス:
+SQLiteなどのローカルデータベースを使用する場合、同時アクセスの数が増えるとパフォーマンスが低下することがあります。規模が大きくなる場合、外部データベースを検討するのが良いでしょう。
+
+5. まとめ
+Replitでのデータベースの利用は可能ですが、セッション終了後にデータが失われる可能性があるため、データの永続化に注意する必要があります。
+Webアプリケーションとして公開することができ、API経由でデータベースのデータを提供することも可能です。
+公開したWebアプリケーションにアクセスするためには、Replit上で自動的に生成される公開URL（https://your-repl-name.repl.co）を使います。
+上記の手順に従って、データベースを利用したWebアプリケーションをReplitで公開することができます。 -->
+
+<!-- githubリポジトリを使用した際は、アプリケーションにログインするたびに自動でデータベースに接続してくれますか
+ChatGPT:
+ChatGPT
+GitHubリポジトリを使用する場合、データベースの接続の管理方法に関しては、少し注意が必要です。GitHub自体はコードの管理とバージョン管理を提供するだけであり、実際にアプリケーションがデータベースに接続するためには、GitHubリポジトリのコード内で適切に設定を行う必要があります。
+
+GitHubリポジトリとデータベースの接続に関するポイント
+GitHubリポジトリの役割:
+
+GitHubは、アプリケーションのコードや設定ファイルをバージョン管理し、複数の開発者が共同で作業できるようにします。
+GitHubにアップロードされたコードを直接実行するわけではないため、データベース自体はGitHub上には存在しません。データベースは通常、アプリケーションをホストしているサーバー（たとえば、Replitの仮想環境）や外部のデータベースサービスに配置されます。
+データベースへの接続設定:
+
+Replit上でのSQLiteのようにローカルファイルベースのデータベースを使う場合、アプリケーション内でSQLiteの接続パスを設定します。このパスは、GitHubリポジトリの中には含まれません。
+外部データベース（例えば、PostgreSQLやMySQL）を使う場合、接続情報（ユーザー名、パスワード、ホスト名、データベース名など）は環境変数として設定することが一般的です。この接続情報はGitHubリポジトリに直接保存することは避け、リポジトリに含めるべきではありません（セキュリティ上の理由から）。
+データベース接続を自動化する方法:
+
+GitHubリポジトリを使ったデプロイ時に、データベース接続の設定を自動化することができます。具体的には、以下のように設定できます：
+環境変数を使ってデータベースの接続情報を設定し、アプリケーションが起動する際にその環境変数を読み込んで自動的にデータベースに接続する方法。
+HerokuやVercelのようなホスティングサービスを使う場合、デプロイ時に外部データベース（例：PostgreSQL、MySQL、MongoDBなど）と接続する設定を自動で行ってくれることがあります。
+ログイン時に自動的にデータベースに接続する:
+
+アプリケーションが立ち上がる際に、自動でデータベースに接続するコードを書くことが可能です。例えば、Node.jsを使っている場合、アプリケーション起動時にデータベースへの接続処理を行います。
+ログイン時に自動でデータベースに接続するというのは、通常はアプリケーションがデータベースの接続設定を行っているということです。もしアプリケーションのコード内でデータベース接続処理を記述しているならば、ユーザーがログインするたびにその設定を利用してデータベースにアクセスすることができます。
+具体的な方法
+環境変数を使ってデータベース接続情報を設定:
+
+HerokuやVercelなどのホスティングサービスを使っている場合、環境変数を設定し、アプリケーションがデプロイされるときにその環境変数を使ってデータベース接続情報を自動的に設定できます。
+例えば、PostgreSQLの場合、DATABASE_URLという環境変数に接続情報が含まれていることが多いです。アプリケーション内では以下のように記述します：
+
+javascript
+コードをコピーする
+const { Pool } = require('pg');
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+});
+SQLiteを使う場合:
+
+SQLiteのデータベースファイルがローカルに保存される場合、そのパスを__dirnameで指定し、サーバーが起動した際にSQLiteの接続を設定することができます。例えば：
+javascript
+コードをコピーする
+const sqlite3 = require('sqlite3').verbose();
+const db = new sqlite3.Database('./SQL/test.db');  // データベースのパス
+まとめ
+GitHubリポジトリにコードをアップロードすることで、アプリケーションのロジックやデータベース接続情報を管理できますが、実際のデータベースはGitHub上には存在しません。
+ログイン時にデータベースに自動接続するためには、アプリケーションコード内でデータベース接続設定を行い、必要な接続情報を環境変数や設定ファイルで管理する必要があります。
+GitHubはコードのバージョン管理に特化しており、データベースそのものは別途管理する必要があります。ReplitやHeroku、Vercelなどのホスティングサービスで外部データベースとの接続を自動化することも可能です。 -->

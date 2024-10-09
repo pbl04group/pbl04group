@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>全画面ボタン表示</title>
+    <style>
+        body {
+            background-color: #90AFC5;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            padding-top: 0px; /* ヘッダーの高さ分の余白を追加 */
+            box-sizing: border-box;
+        }
+
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #73a0c0;
+            height: 60px; /* ヘッダーの高さを統一 */
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header .back-button {
+            background-color: #f0f0f0;
+            color: #000;
+            border: 1px solid #000;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 7px;
+            font-size: 1.2em; /* 統一 */
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .header .back-button:hover {
+            background-color: #dddddd;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            font-weight: 900;
+            margin: 0;
+            color: black;
+            text-align: center;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .container {
+            text-align: center;
+        }
+        table {
+            width: 60%;
+            border-collapse: collapse;
+            margin: auto;
+            background-color: #ffffff; /* 背景色を白に設定 */
+            table-layout: fixed; /* セルの幅を固定 */
+        }
+        th, td {
+            border: 1px solid #000000; /* 境界線の色を黒に設定 */
+            padding: 15px;
+            text-align: left;
+            background-color: #ffffff; /* 背景色を白に設定 */
+            word-wrap: break-word; /* 長い単語や文字列を折り返す */
+            overflow-wrap: break-word; /* 長い単語や文字列を折り返す */
+            white-space: normal; /* テキストの折り返しを許可 */
+        }
+        th {
+            font-weight: bold;
+            background-color: #f2f2f2; /* ヘッダー行の背景色 */
+        }
+        tr {
+            border-bottom: 1px solid #000000; /* 行ごとの下罫線 */
+        }
+        tr:last-child {
+            border-bottom: none; /* 最後の行には下罫線を引かない */
+        }
+        tr:nth-child(even) {
+            background-color: #ffffff; /* 偶数行の背景色 */
+        }
+        tr:hover {
+            background-color: #eeeeee; /* 行ホバー時の背景色 */
+        }
+        th.id-col, td.id-col {
+            width: 15%; /* ID列の幅を全体の15%に設定 */
+        }
+        th:not(.id-col), td:not(.id-col) {
+            width: 50%; /* その他の列の幅を25%に設定 */
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="/home" class="back-button">戻る</a>
+        <h1>YHS<br>問い合わせ一覧</h1>
+    </div>
+    <div class="container">
+        <table id="inquiry-table">
+            <form action="/get-inqiries" method="GET">
+            <thead>
+                <tr>
+                    <th>問い合わせID</th>
+                    <th>問い合わせ内容</th>
+                    <th>メールアドレス</th>
+                    <th>作成日時</th>  <!--変更必要？-->
+                    <th>操作</th>
+                </tr>
+            </thead>
+            </form>
+            <tbody>
+                <!-- データがここに表示されます -->
+            </tbody>
+        </table>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('/get-inquiries')
+                .then(response => response.json())
+                .then(data => {
+                    const tbody = document.querySelector('#inquiry-table tbody');
+                    data.forEach(inquiry => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${inquiry.toiawaseID}</td>
+                            <td>${inquiry.toiawase}</td>
+                            <td>${inquiry.toiawase_mail}</td>
+                            <td>${inquiry.create_at}</td>
+                            <td><button class="delete-button" data-id="${inquiry.toiawaseID}">削除</buttton></td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+
+                // 各削除ボタンにイベントリスナーを追加
+                const deleteButtons = document.querySelectorAll('.delete-button');
+                    deleteButtons.forEach(button => {
+                        button.addEventListener('click', function() {
+                            const id = this.getAttribute('data-id');
+                            fetch('/delete-inquiry', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({ id: id })
+                            })
+                            .then(response => response.json())
+                            .then(result => {
+                                if (result.success) {
+                                    alert('問い合わせが削除されました');
+                                    // 削除された行をテーブルから削除
+                                    const row = this.closest('tr');
+                                    row.remove();
+                                } else {
+                                    alert('削除に失敗しました');
+                                }
+                            })
+                            .catch(error => console.error('Error deleting inquiry:', error));
+                        });
+                    });
+                })
+                .catch(error => console.error('Error fetching inquiries:', error));
+        });
+        // サンプルデータ
+        // const inquiries = [
+        //     { content: "サンプル問い合わせ内容が非常に長い場合のテスト", email: "example1@example.com", created_at: "2024-07-23 12:34:56" },
+        //     { content: "サンプル問い合わせ内容が非常に長い場合のテスト", email: "example1@example.com", created_at: "2024-07-23 12:34:56" },
+        //     { content: "サンプル問い合わせ内容が非常に長い場合のテスト", email: "example1@example.com", created_at: "2024-07-23 12:34:56" },
+        //     { content: "サンプル問い合わせ内容が非常に長い場合のテスト", email: "example1@example.com", created_at: "2024-07-23 12:34:56" },
+        //     { content: "サンプル問い合わせ内容が非常に長い場合のテスト", email: "example1@example.com", created_at: "2024-07-23 12:34:56" },
+        //     { content: "サンプル問い合わせ内容が非常に長い場合のテスト", email: "example1@example.com", created_at: "2024-07-23 12:34:56" },
+        //     { content: "サンプル問い合わせ内容が非常に長い場合のテスト", email: "example1@example.com", created_at: "2024-07-23 12:34:56" },
+        //     { content: "サンプル問い合わせ内容が非常に長い場合のテスト", email: "example1@example.com", created_at: "2024-07-23 12:34:56" },
+        //     { content: "サンプル問い合わせ内容が非常に長い場合のテスト", email: "example1@example.com", created_at: "2024-07-23 12:34:56" },
+        //     { content: "サンプル問い合わせ内容が非常に長い場合のテスト", email: "example1@example.com", created_at: "2024-07-23 12:34:56" },
+        //     { content: "サンプル問い合わせ内容が非常に長い場合のテスト", email: "example1@example.com", created_at: "2024-07-23 12:34:56" },
+        //     { content: "サンプル問い合わせ内容が非常に長い場合のテスト", email: "example1@example.com", created_at: "2024-07-23 12:34:56" },
+        //     { content: "サンプル問い合わせ内容が非常に長い場合のテスト", email: "example1@example.com", created_at: "2024-07-23 12:34:56" },
+        //     // データがたくさん続く...
+        // ];
+
+        // function populateTable() {
+        //     const tableBody = document.querySelector('#inquiry-table tbody');
+        //     inquiries.forEach(inquiry => {
+        //         const row = document.createElement('tr');
+        //         row.innerHTML = `
+        //             <td>${inquiry.content}</td>
+        //             <td>${inquiry.email}</td>
+        //             <td>${inquiry.created_at}</td>
+        //         `;
+        //         tableBody.appendChild(row);
+        //     });
+        // }
+
+        // // ページが読み込まれたらテーブルを埋める
+        // document.addEventListener('DOMContentLoaded', populateTable);
+    </script>
+</body>
+</html>

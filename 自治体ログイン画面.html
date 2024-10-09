@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>自治体ログイン画面</title>
+    <style>
+        body {
+            background-color: #90AFC5;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            padding-top: 80px; /* ヘッダーの高さ分の余白を追加 */
+            box-sizing: border-box;
+        }
+
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #73a0c0;
+            height: 60px; /* ヘッダーの高さを統一 */
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .header h1 {
+            font-size: 2em;
+            font-weight: 900;
+            margin: 0;
+            color: black;
+            text-align: center;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        #container {
+            text-align: center;
+            width: 80%;
+            max-width: 600px;
+        }
+        .button, .soushinbutton {
+            font-size: 18px;
+            padding: 10px 20px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            color: white;
+        }
+        .soushinbutton {
+            font-size: 20px;
+        }
+        .back-button {
+            background-color: #999999;
+            position: absolute;
+            top: 5%;
+            left: 5%;
+        }
+        .back-button:hover {
+            background-color: #666666;
+        }
+        .submit-button {
+            background-color: #000000;
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .submit-button:hover {
+            background-color: #4e4e4e;
+        }
+        .text1, .text2 {
+            font-size: 16px;
+            line-height: 1.5;
+            padding: 10px;
+            width: 100%;
+            box-sizing: border-box;
+            resize: none;
+            border: 1px solid #ccc;
+        }
+        .text1 {
+            height: 50px;
+            font-size: 16px;
+            line-height: 1.5;
+            padding: 10px;
+            width: 100%;
+            max-width: 400px;
+            box-sizing: border-box;
+        }
+        .text2 {
+            height: 50px;
+            font-size: 16px;
+            line-height: 1.5;
+            padding: 10px;
+            width: 100%;
+            max-width: 400px;
+            box-sizing: border-box;
+        }
+        #syudanSelect {
+            font-size: 16px;
+            padding: 12px;
+            width: 80%;
+            max-width: 400px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+        }
+        .radio-container {
+            margin-top: 10px;
+            text-align: left;
+            margin-left: 22%;
+        }
+        .radio-label {
+            font-size: 20px;
+            display: block;
+            margin-bottom: 5px;
+            width: 170px;
+        }
+        .hidden {
+            display: none;
+        }
+        .visible {
+            display: block;
+        }
+        .error {
+            border: 2px solid red;
+            border-radius: 5px;
+            padding: 8px;
+        }
+        .required-text {
+            font-size: 17px;
+            color: red;
+            margin-left: 5px;
+            padding: 3px;
+            border: 2px solid red;
+            border-radius: 30%;
+        }
+    </style>
+    <script>    
+        function validateForm() {
+            let isValid = true;
+    
+            const municipalityIDInput = document.querySelector('.text1');
+            const passwordInput = document.querySelector('.text2');
+    
+            // Reset previous error styles
+            municipalityIDInput.classList.remove('error');
+            passwordInput.classList.remove('error');
+    
+            // Check municipality ID input
+            if (municipalityIDInput.value.trim() === '') {
+                municipalityIDInput.classList.add('error');
+                isValid = false;
+            }
+    
+            // Check password input
+            if (passwordInput.value.trim() === '') {
+                passwordInput.classList.add('error');
+                isValid = false;
+            }
+    
+            if (!isValid) {
+                alert('自治体IDとパスワードの両方を入力してください');
+            }
+    
+            return isValid;
+        }
+    </script>
+</head>
+<body>
+    <div class="header">
+        <h1>YHS<br>避難補助アプリ</h1>
+    </div>
+    <div id="container">
+        <form action="/rogin-save" method="post" onsubmit="return validateForm()">
+            <h2>自治体ID<span class="required-text">必須</span></h2>
+            <input type="text" id="zititai_id" name="zititai_id" class="text1" placeholder="自治体ID">
+            <h2>パスワード<span class="required-text">必須</span></h2>
+            <input type="password" id="zititai_password" name="zititai_password" class="text2" placeholder="パスワード">
+            <button type="submit" class="soushinbutton submit-button">ログイン</button>
+    </form>
+    </div>
+    <!-- <button class="soushinbutton submit-button" onclick="validateForm()">ログイン</button> -->
+    
+</body>
+</html>
